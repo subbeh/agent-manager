@@ -5,7 +5,10 @@
 # as a commit, never as that release.
 VERSION := $(if $(wildcard .git),$(shell git describe --tags --always --dirty --long))
 VERSION := $(or $(VERSION),dev)
-export GOFLAGS := $(GOFLAGS) -ldflags=-X=main.version=$(VERSION)
+# override keeps the stamp when GOFLAGS is set on the make command line; it goes
+# first so a caller's own -ldflags, which Go applies last, still wins.
+override GOFLAGS := -ldflags=-X=main.version=$(VERSION) $(GOFLAGS)
+export GOFLAGS
 
 .PHONY: build install
 
