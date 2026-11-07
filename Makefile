@@ -6,8 +6,9 @@
 VERSION := $(if $(wildcard .git),$(shell git describe --tags --always --dirty --long))
 VERSION := $(or $(VERSION),dev)
 # override keeps the stamp when GOFLAGS is set on the make command line; it goes
-# first so a caller's own -ldflags, which Go applies last, still wins.
-override GOFLAGS := -ldflags=-X=main.version=$(VERSION) $(GOFLAGS)
+# first so a caller's own -ldflags, which Go applies last, still wins. go env
+# supplies flags stored with go env -w when GOFLAGS is not set.
+override GOFLAGS := -ldflags=-X=main.version=$(VERSION) $(or $(GOFLAGS),$(shell go env GOFLAGS))
 export GOFLAGS
 
 .PHONY: build install
