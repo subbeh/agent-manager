@@ -2,7 +2,9 @@
 # An empty prefix means this directory is a repo root, not a subdirectory whose
 # describe would read the enclosing repo's tags.
 VERSION := $(shell [ -z "$$(git rev-parse --show-prefix 2>/dev/null)" ] && git describe --tags --always --dirty --long 2>/dev/null || echo dev)
-LDFLAGS := -ldflags "-X main.version=$(VERSION)"
+# Exported and read as $$VERSION so a tag name reaches the shell as data, not code.
+export VERSION
+LDFLAGS := -ldflags "-X main.version=$$VERSION"
 
 .PHONY: build install
 
