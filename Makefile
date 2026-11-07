@@ -1,15 +1,16 @@
-# --long keeps a build on a tag reading as a commit, never as that release.
-# An empty prefix means this directory is a repo root, not a subdirectory whose
-# describe would read the enclosing repo's tags.
-VERSION := $(shell [ -z "$$(git rev-parse --show-prefix 2>/dev/null)" ] && git describe --tags --always --dirty --long 2>/dev/null || echo dev)
-# Exported and read as $$VERSION so a tag name reaches the shell as data, not code.
-export VERSION
-LDFLAGS := -ldflags "-X main.version=$$VERSION"
+# Plain make functions and GOFLAGS keep the recipes free of shell syntax, so
+# they run under cmd.exe as well as sh, and a tag name never reaches a shell.
+# .git marks this directory as a repo root, so source inside another repository
+# does not read that repository's tags. --long keeps a build on a tag reading
+# as a commit, never as that release.
+VERSION := $(if $(wildcard .git),$(shell git describe --tags --always --dirty --long))
+VERSION := $(or $(VERSION),dev)
+export GOFLAGS := $(GOFLAGS) -ldflags=-X=main.version=$(VERSION)
 
 .PHONY: build install
 
 build:
-	go build $(LDFLAGS) -o agent-manager$(shell go env GOEXE) .
+	go build -o agent-manager$(shell go env GOEXE) .
 
 install:
-	go install $(LDFLAGS) .
+	go install .
